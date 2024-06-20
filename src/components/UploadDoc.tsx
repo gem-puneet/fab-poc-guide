@@ -26,6 +26,9 @@ import noImg from "../assets/no-file.svg";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import ArrowCircleRightSharpIcon from "@mui/icons-material/ArrowCircleRightSharp";
+import PreviewPdf from "./PreviewPdf";
+
+//Preview PDF part
 
 export const UploadDocs: React.FC = () => {
 
@@ -349,12 +352,7 @@ export const UploadDocs: React.FC = () => {
               height="100%"
             >
               {selectedFile ? (
-                <div>
-                  <Typography variant="h6">{selectedFile?.name}</Typography>
-                  {/* <iframe src='selectedFile' style={{width:'100%' ,height:'500px' }} /> */}
-
-                  {/* Add logic to preview file content */}
-                </div>
+                <PreviewPdf file = {selectedFile} />
               ) : (
                 <Typography>Select a file to preview</Typography>
               )}
