@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from 'axios';
+
 import {
   Typography,
   Container,
@@ -12,27 +14,59 @@ import {
   Link,
   IconButton,
   TextField,
+  Alert,
+  Snackbar
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import DocumentInvoice from "../assets/document-invoice.svg";
 import TaskIcon from "../assets/task-icon.svg";
 import UploadFile from "../assets/upload-file.svg";
 import CommentIcon from "../assets/comment-icon.svg";
+import noImg from "../assets/no-file.svg";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import ArrowCircleRightSharpIcon from "@mui/icons-material/ArrowCircleRightSharp";
 
 export const UploadDocs: React.FC = () => {
+
+
+
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any>({});
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [alertOpen, setAlertOpen] = useState<boolean>(false);
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles([...files, ...Array.from(event.target.files)]);
+      const uploadedFiles = Array.from(event.target.files);
+      handleUploadDoc(uploadedFiles[0]);
     }
   };
 
+  const handleUploadDoc = async (uploadFile: File) => {
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+
+    interface IResponse {
+      data : any
+    }
+
+    try {
+      const response: IResponse = await axios.post('http://52.66.10.81:8004/upload_docs', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if(response){
+      setSelectedFile(uploadFile);
+      setFiles([...files, uploadFile]);
+      setAlertOpen(true);
+      }
+    } catch (error) {
+      console.error('There was an error uploading the file!', error);
+    }
+  };
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
   };
@@ -126,14 +160,25 @@ export const UploadDocs: React.FC = () => {
     borderRadius: "50%",
     padding: "8px",
     backgroundColor: "#ccc",
-    cursor: "pointer",
+    cursor: "pointer"
+
+  };
+
+  const noImage : React.CSSProperties = {
+    left: "60%",
+    position: "absolute",
+    textAlign:"center",
+    top:"45%",
+    transform:"translate(-50%, -50%)"
   };
 
   const handleAction = (action: string) => {
     setSelectedAction(action);
-    console.log(`${action} action performed`);
   };
 
+  const handleCloseAlert = () => {
+    setAlertOpen(false);
+  };
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <Container style={{ flex: 1, maxWidth: "100%" }}>
@@ -192,23 +237,8 @@ export const UploadDocs: React.FC = () => {
                     display: "none",
                   }}
                 />
-                <Button
-                  variant="outlined"
-                  component="span"
-                  style={{
-                    border: "0px",
-                    color: "#242634",
-                    marginTop: "10px",
-                    fontWeight: "500",
-                    fontSize: "16px",
-                  }}
-                >
-                  <img src={UploadFile} style={{ marginLeft: "10px" }}></img>{" "}
-                  <span
-                    style={{ marginLeft: "10px", textTransform: "capitalize" }}
-                  >
-                    Upload new file
-                  </span>
+                <Button variant="outlined" component="span" style={{border:'0px', color:'#242634', marginTop:'10px', fontWeight:'500', fontSize:'16px'}}>
+                 <img src={UploadFile} style={{marginLeft:'10px', marginTop:'-5px'}}></img> <span style={{marginLeft:'10px',fontWeight:'500', fontSize:'16px', textTransform:'capitalize', marginTop:'-5px'}}>Upload new file</span>
                 </Button>
               </label>
               {/* <Input type="file" inputProps={{ multiple: true }} onChange={handleFileUpload}   /> */}
@@ -242,7 +272,6 @@ export const UploadDocs: React.FC = () => {
                               : "rgba(0, 70, 140, 1)",
                         }}
                       />
-                      {/* <PdfIcon  marginRight: {'8px'} {color: file === selectedFile ? 'white' : 'black'} ></PdfIcon> */}
                       <ListItemText
                         primaryTypographyProps={{
                           style: {
@@ -252,8 +281,8 @@ export const UploadDocs: React.FC = () => {
                             maxWidth: "200px",
                           },
                         }}
-                        primary={file.name}
-                        secondary={formatFileSize(file.size)}
+                        primary={file?.name}
+                        secondary={formatFileSize(file?.size)}
                         style={{
                           marginTop: "30px",
                           width: "280px",
@@ -261,7 +290,7 @@ export const UploadDocs: React.FC = () => {
                           padding: "8px",
                           marginLeft: "-10px",
                           gap: "14px",
-                          color: file === selectedFile ? "white" : "black",
+                          color: file === selectedFile ? "#fff" : "#000",
                         }}
                       />
                       <IconButton
@@ -271,17 +300,15 @@ export const UploadDocs: React.FC = () => {
                         }}
                         style={{
                           position: "absolute",
-                          // top: '4px',
                           right: "5px",
-                          // backgroundColor: 'white', // Change this to the desired background color
                           borderRadius: "50%",
                           border:
                             file === selectedFile
                               ? "1px solid white"
                               : "1px solid #6A737B",
-                          padding: "0px", // Adjust padding to make the circle larger or smaller
+                          padding: "0px",
                           boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.2)",
-                          color: file === selectedFile ? "white" : "black",
+                          color: file === selectedFile ? "#fff" : "#000",
                         }}
                       >
                         <CloseIcon fontSize="small" />
@@ -311,6 +338,8 @@ export const UploadDocs: React.FC = () => {
               </Button>
             </Link>
           </Grid>
+          {files && files.length>0 ?
+          <>
           <Grid item xs={5} style={{ borderRight: "1px solid #ccc" }}>
             <Box
               p={2}
@@ -321,7 +350,7 @@ export const UploadDocs: React.FC = () => {
             >
               {selectedFile ? (
                 <div>
-                  <Typography variant="h6">{selectedFile.name}</Typography>
+                  <Typography variant="h6">{selectedFile?.name}</Typography>
                   {/* <iframe src='selectedFile' style={{width:'100%' ,height:'500px' }} /> */}
 
                   {/* Add logic to preview file content */}
@@ -541,8 +570,23 @@ export const UploadDocs: React.FC = () => {
               </Box>
             </Box>
           </Grid>
+          </>
+          :
+          <Box style={noImage}>
+          <img src={noImg} alt="No files" style={{width:'350px'}}></img>
+          <h1>No file uploaded</h1>
+          <p style={{fontSize:'16px', color:'#444444'}}>Click on upload new file on left panel to initiate the task related operations</p>
+          </Box>
+          }
         </Grid>
       </Container>
+      {alertOpen && (
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={alertOpen} autoHideDuration={3000} onClose={handleCloseAlert}>
+          <Alert onClose={handleCloseAlert} severity="success" sx={{ width: '100%' }}>
+            File uploaded successfully!
+          </Alert>
+        </Snackbar>
+      )}
     </div>
   );
 };

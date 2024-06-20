@@ -413,7 +413,7 @@ export const DocumentRecords = () => {
                     <TableCell align="right">{row.created_by}</TableCell>
                     <TableCell align="right">{row.created_on}</TableCell>
                     <TableCell align="right">{row.total_doc}</TableCell>
-                    <TableCell align="right">{row.status}</TableCell>
+                    <TableCell align="right"><Box>{row.status}</Box></TableCell>
                     <TableCell align="right">
                       <IconButton
                         onClick={(event) => handleMenuOpen(event, row)}
